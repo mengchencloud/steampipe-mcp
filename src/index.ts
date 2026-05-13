@@ -125,7 +125,9 @@ async function startHttpServer(port: number, db: DatabaseService, apiKey: string
   const app = express();
 
   app.use(cors());
-  app.use(express.json());
+  // Do NOT use express.json() globally — the MCP transport (StreamableHTTPServerTransport)
+  // uses its own body-parser internally. Global express.json() consumes the request body
+  // stream, causing the transport to read an empty body (JSON-RPC parse error).
 
   // Health check endpoint
   app.get('/health', (_req, res) => {

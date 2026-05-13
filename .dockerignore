@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Build output (will be rebuilt inside container)
+dist/
+*.tsbuildinfo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.*
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs and misc
+README.md
+CHANGELOG.md
+LICENSE
+CLAUDE.md
+TODO.md
+*.md
+
+# CI/CD (not needed in image)
+buildspec.yml
+.github/
+
+# Logs
+*.log
+logs/
+
+# Test
+coverage/
+tests/
+test_mcp*.py
+
+# DeepSeek/TUI artifacts
+.deepseek/
