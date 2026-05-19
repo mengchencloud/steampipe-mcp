@@ -45,13 +45,16 @@ export class DatabaseService {
   }
 
   private setupPoolErrorHandlers(pool: PoolType) {
-    // Handle pool errors to prevent crashes
+    // Handle pool errors to prevent crashes.
+    // When Steampipe's backend kills idle connections, pg emits 'error'
+    // on the pool. We reset state so the next query triggers reconnection
+    // via ensureConnection() instead of crashing the process.
     pool.on('error', (err) => {
-      logger.error('Unexpected pool error:', err);
-      // Reset connection state since the pool is now invalid
+      logger.error('Pool error (will reconnect on next query):', err.message);
       this._isConnected = false;
       this._connectionString = null;
-      this.pool = null;
+      // Don't null out this.pool here — let ensureConnection() handle
+      // closing and recreating it cleanly on the next call.
     });
   }
 
@@ -117,7 +120,9 @@ export class DatabaseService {
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
-        maxLifetimeSeconds: 300  // 5 minutes
+        maxLifetimeSeconds: 300,  // 5 minutes
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000,  // Send keepalive after 10s idle
       };
 
       // Configure SSL based on URL parameters or use secure defaults

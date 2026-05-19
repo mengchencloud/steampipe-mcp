@@ -33,6 +33,18 @@ const SERVER_INFO = {
 
 let serverStartTime: Date;
 
+// Prevent process crash on unhandled PG connection errors.
+// When Steampipe's backend drops idle connections, the pg Client
+// emits an 'error' event that may not be caught by the pool handler.
+// Without these, the process exits with "Connection terminated unexpectedly".
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught exception (process kept alive):', err.message);
+  // Let the pool's own error handler reset state; don't exit.
+});
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled rejection (process kept alive):', reason);
+});
+
 // Handle graceful shutdown
 function setupShutdownHandlers(db: DatabaseService) {
   const gracefulShutdown = async () => {
